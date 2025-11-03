@@ -1,0 +1,193 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // o "mysql" o "sqlite" según tu entorno
+  url      = env("DATABASE_URL")
+}
+
+// ========================
+// ENUMS
+// ========================
+
+enum MemberStatus {
+  active
+  inactive
+  expired
+}
+
+enum PaymentStatus {
+  paid
+  pending
+  overdue
+}
+
+enum AttendanceStatus {
+  allowed
+  denied
+}
+
+enum MessageStatus {
+  sent
+  pending
+}
+
+enum MessageType {
+  renewal
+  birthday
+  payment_reminder
+  custom
+}
+
+enum UserRole {
+  admin
+  reception
+  client
+}
+
+enum ExpenseCategory {
+  limpieza
+  luz
+  personal
+  mantenimiento
+  equipamiento
+  otros
+}
+
+enum ExpenseStatus {
+  paid
+  pending
+}
+
+enum NotificationType {
+  expiry
+  payment
+  message
+  system
+}
+
+// ========================
+// MODELOS PRINCIPALES
+// ========================
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  memberId  String?  
+  notifications Notification[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Member {
+  id            String       @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  membershipId  String
+  membership    Membership   @relation(fields: [membershipId], references: [id])
+  status        MemberStatus
+  joinDate      DateTime
+  expiryDate    DateTime
+  birthDate     DateTime
+  qrCode        String
+  photo         String?
+  payments      Payment[]
+  attendances   Attendance[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Membership {
+  id          String     @id @default(cuid())
+  name        String
+  price       Float
+  duration    Int         // en días
+  features    String[]    // array de características
+  description String
+  members     Member[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id              String         @id @default(cuid())
+  memberId        String
+  member          Member         @relation(fields: [memberId], references: [id])
+  amount          Float
+  date            DateTime
+  status          PaymentStatus
+  invoiceNumber   String
+  membershipName  String
+  createdAt       DateTime @default(now())
+}
+
+model Attendance {
+  id         String           @id @default(cuid())
+  memberId   String
+  member     Member           @relation(fields: [memberId], references: [id])
+  date       DateTime
+  time       String
+  status     AttendanceStatus
+  attended   Boolean?          // opcional
+  createdAt  DateTime @default(now())
+}
+
+model Message {
+  id          String       @id @default(cuid())
+  type        MessageType
+  recipient   String
+  content     String
+  status      MessageStatus
+  date        DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   // new_member, payment, expiry_warning, attendance
+  description String
+  date        DateTime
+  icon        String
+  createdAt   DateTime @default(now())
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  category    ExpenseCategory
+  description String
+  amount      Float
+  date        DateTime
+  status      ExpenseStatus
+  createdAt   DateTime @default(now())
+}
+
+model GymConfig {
+  id           String   @id @default(cuid())
+  name         String
+  logo         String?
+  email        String
+  currency     String
+  openingTime  String
+  closingTime  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Notification {
+  id          String            @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String
+  date        DateTime
+  read        Boolean           @default(false)
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}

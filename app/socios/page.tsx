@@ -114,7 +114,7 @@ export default function SociosPage() {
     <div className="flex flex-col">
       <Header title="Socios" description="Gestión de miembros del gimnasio" />
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 md:p-6">
         <MemberTable
           members={members}
           onAdd={handleAdd}

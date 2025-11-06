@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Eye } from "lucide-react";
+import { Download, Eye, FileDown } from "lucide-react";
 import type { Payment } from "@/lib/types/types";
 import { useState } from "react";
+import { exportToCSV } from "@/lib/utils/csv-export";
 import {
   Dialog,
   DialogContent,
@@ -39,15 +40,56 @@ export function PaymentHistory({
     setPreviewOpen(true);
   };
 
+  const handleExportCSV = () => {
+    const exportData = payments.map((payment) => ({
+      factura: payment.invoiceNumber,
+      socio: payment.memberName,
+      membresia: payment.membershipName,
+      fecha: payment.date instanceof Date 
+        ? payment.date.toLocaleDateString("es-MX")
+        : new Date(payment.date).toLocaleDateString("es-MX"),
+      monto: payment.amount,
+      estado: payment.status === "paid" ? "Pagado" : payment.status === "pending" ? "Pendiente" : "Vencido",
+    }));
+
+    exportToCSV(
+      exportData,
+      [
+        { key: "factura", label: "Factura" },
+        { key: "socio", label: "Socio" },
+        { key: "membresia", label: "Membresía" },
+        { key: "fecha", label: "Fecha" },
+        { key: "monto", label: "Monto" },
+        { key: "estado", label: "Estado" },
+      ],
+      `historial_pagos_${new Date().toISOString().split("T")[0]}`
+    );
+  };
+
   return (
     <>
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Historial de Pagos</CardTitle>
-          <p className="text-sm text-muted-foreground">Últimos 30 días</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-white">Historial de Pagos</CardTitle>
+              <p className="text-sm text-muted-foreground">Últimos 30 días</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleExportCSV}
+              className="gap-2 border-border"
+              disabled={payments.length === 0}
+            >
+              <FileDown className="h-4 w-4" />
+              <span className="hidden sm:inline">Exportar CSV</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <Table className="min-w-[800px]">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Factura</TableHead>
@@ -127,6 +169,7 @@ export function PaymentHistory({
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

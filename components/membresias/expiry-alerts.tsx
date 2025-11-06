@@ -3,8 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Mail } from "lucide-react";
+import { AlertTriangle, Mail, Download } from "lucide-react";
 import type { Member } from "@/lib/types/types";
+import { exportToCSV } from "@/lib/utils/csv-export";
 
 interface ExpiryAlertsProps {
   expiringMembers: Member[];
@@ -21,12 +22,57 @@ export function ExpiryAlerts({
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
+  const handleExportCSV = () => {
+    const exportData = expiringMembers.map((member) => {
+      const membership = (member as any).membership;
+      const expiryDate = member.expiryDate instanceof Date
+        ? member.expiryDate
+        : new Date(member.expiryDate);
+      const daysLeft = getDaysUntilExpiry(expiryDate);
+
+      return {
+        socio: member.name,
+        membresia: membership?.name || "Sin membresía",
+        diasRestantes: daysLeft,
+        fechaVencimiento: expiryDate.toLocaleDateString("es-MX"),
+        email: member.email || "",
+        telefono: member.phone || "",
+      };
+    });
+
+    exportToCSV(
+      exportData,
+      [
+        { key: "socio", label: "Socio" },
+        { key: "membresia", label: "Membresía" },
+        { key: "diasRestantes", label: "Días Restantes" },
+        { key: "fechaVencimiento", label: "Fecha de Vencimiento" },
+        { key: "email", label: "Email" },
+        { key: "telefono", label: "Teléfono" },
+      ],
+      `membresias_por_vencer_${new Date().toISOString().split("T")[0]}`
+    );
+  };
+
   return (
     <Card className="bg-card border-border">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-yellow-500" />
-          <CardTitle className="text-white">Membresías por Vencer</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <CardTitle className="text-white">Membresías por Vencer</CardTitle>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            className="gap-2 border-border"
+            disabled={expiringMembers.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar CSV</span>
+            <span className="sm:hidden">CSV</span>
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground">Próximos 7 días</p>
       </CardHeader>

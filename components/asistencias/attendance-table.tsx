@@ -12,8 +12,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, Download } from "lucide-react";
 import type { Attendance } from "@/lib/types/types";
+import { exportToCSV } from "@/lib/utils/csv-export";
 
 interface AttendanceTableProps {
   attendances: Attendance[];
@@ -37,6 +38,32 @@ export function AttendanceTable({ attendances }: AttendanceTableProps) {
       !dateFilter || attendanceDate.toISOString().split("T")[0] === dateFilter;
     return matchesSearch && matchesDate;
   });
+
+  const handleExportCSV = () => {
+    const exportData = filteredAttendances.map((attendance) => {
+      const attendanceDate = attendance.date instanceof Date 
+        ? attendance.date 
+        : new Date(attendance.date);
+      
+      return {
+        socio: attendance.memberName,
+        fecha: attendanceDate.toLocaleDateString("es-MX"),
+        hora: attendance.time,
+        estado: attendance.status === "allowed" ? "Permitido" : "Denegado",
+      };
+    });
+
+    exportToCSV(
+      exportData,
+      [
+        { key: "socio", label: "Socio" },
+        { key: "fecha", label: "Fecha" },
+        { key: "hora", label: "Hora" },
+        { key: "estado", label: "Estado" },
+      ],
+      `asistencias_${new Date().toISOString().split("T")[0]}`
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -62,23 +89,36 @@ export function AttendanceTable({ attendances }: AttendanceTableProps) {
           />
         </div>
 
-        {(search || dateFilter) && (
+        <div className="flex gap-2">
+          {(search || dateFilter) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearch("");
+                setDateFilter("");
+              }}
+              className="border-border bg-transparent"
+            >
+              Limpiar
+            </Button>
+          )}
           <Button
             variant="outline"
-            onClick={() => {
-              setSearch("");
-              setDateFilter("");
-            }}
-            className="border-border bg-transparent"
+            onClick={handleExportCSV}
+            className="gap-2 border-border"
+            disabled={filteredAttendances.length === 0}
           >
-            Limpiar Filtros
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar CSV</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
-        <Table>
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
               <TableHead className="text-muted-foreground">Socio</TableHead>
@@ -118,6 +158,7 @@ export function AttendanceTable({ attendances }: AttendanceTableProps) {
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {filteredAttendances.length === 0 && (

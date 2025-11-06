@@ -12,9 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Eye, Pencil, Trash2, Filter } from "lucide-react";
+import { Search, Plus, Eye, Pencil, Trash2, Filter, Download } from "lucide-react";
 import Link from "next/link";
 import { Member } from "@prisma/client";
+import { exportToCSV } from "@/lib/utils/csv-export";
 
 interface MemberWithMembership extends Member {
   membership?: {
@@ -98,6 +99,34 @@ export function MemberTable({
     });
   };
 
+  const handleExportCSV = () => {
+    const exportData = filteredMembers.map((member) => ({
+      nombre: member.name,
+      email: member.email,
+      telefono: member.phone || "",
+      membresia: member.membership?.name || "Sin membresía",
+      estado: getStatusLabel(member.status),
+      fechaRegistro: new Date(member.joinDate).toLocaleDateString("es-MX"),
+      fechaVencimiento: formatDate(member.expiryDate),
+      fechaNacimiento: new Date(member.birthDate).toLocaleDateString("es-MX"),
+    }));
+
+    exportToCSV(
+      exportData,
+      [
+        { key: "nombre", label: "Nombre" },
+        { key: "email", label: "Email" },
+        { key: "telefono", label: "Teléfono" },
+        { key: "membresia", label: "Membresía" },
+        { key: "estado", label: "Estado" },
+        { key: "fechaRegistro", label: "Fecha de Registro" },
+        { key: "fechaVencimiento", label: "Fecha de Vencimiento" },
+        { key: "fechaNacimiento", label: "Fecha de Nacimiento" },
+      ],
+      `socios_${new Date().toISOString().split("T")[0]}`
+    );
+  };
+
   const isExpiringSoon = (date: Date) => {
     const daysUntilExpiry = Math.ceil(
       (new Date(date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
@@ -154,10 +183,18 @@ export function MemberTable({
           ))}
         </div>
 
-        <Button onClick={onAdd} className="gap-2 w-full sm:w-auto">
-          <Plus className="h-4 w-4" />
-          Nuevo Socio
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button onClick={handleExportCSV} variant="outline" className="gap-2 flex-1 sm:flex-none border-border">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar CSV</span>
+            <span className="sm:hidden">CSV</span>
+          </Button>
+          <Button onClick={onAdd} className="gap-2 flex-1 sm:flex-none">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nuevo Socio</span>
+            <span className="sm:hidden">Nuevo</span>
+          </Button>
+        </div>
       </div>
 
       {/* Results counter */}
@@ -169,8 +206,8 @@ export function MemberTable({
 
       {/* Table */}
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <Table className="min-w-[800px]">
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground font-semibold">

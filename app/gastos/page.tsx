@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/select";
 import { expenses, getTotalExpenses } from "@/lib/mock-data";
 import type { Expense } from "@/lib/types/types";
-import { Receipt, TrendingUp, DollarSign, Plus, Search } from "lucide-react";
+import { Receipt, TrendingUp, DollarSign, Plus, Search, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportToCSV } from "@/lib/utils/csv-export";
 
 const categoryLabels: Record<Expense["category"], string> = {
   limpieza: "Limpieza",
@@ -83,6 +84,28 @@ export default function GastosPage() {
       description: "El gasto ha sido registrado exitosamente",
     });
     setShowAddModal(false);
+  };
+
+  const handleExportCSV = () => {
+    const exportData = filteredExpenses.map((expense) => ({
+      fecha: new Date(expense.date).toLocaleDateString("es-MX"),
+      categoria: categoryLabels[expense.category],
+      descripcion: expense.description,
+      monto: expense.amount,
+      estado: expense.status === "paid" ? "Pagado" : "Pendiente",
+    }));
+
+    exportToCSV(
+      exportData,
+      [
+        { key: "fecha", label: "Fecha" },
+        { key: "categoria", label: "Categoría" },
+        { key: "descripcion", label: "Descripción" },
+        { key: "monto", label: "Monto" },
+        { key: "estado", label: "Estado" },
+      ],
+      `gastos_${new Date().toISOString().split("T")[0]}`
+    );
   };
 
   return (
@@ -184,18 +207,31 @@ export default function GastosPage() {
       {/* Expenses Table */}
       <Card className="bg-secondary border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="text-white">Historial de Gastos</CardTitle>
               <CardDescription>Todos los gastos registrados</CardDescription>
             </div>
-            <Button
-              onClick={() => setShowAddModal(true)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Agregar Gasto
-            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={handleExportCSV}
+                className="gap-2 border-border flex-1 sm:flex-none"
+                disabled={filteredExpenses.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Exportar CSV</span>
+                <span className="sm:hidden">CSV</span>
+              </Button>
+              <Button
+                onClick={() => setShowAddModal(true)}
+                className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Agregar Gasto</span>
+                <span className="sm:hidden">Agregar</span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -225,62 +261,66 @@ export default function GastosPage() {
           </div>
 
           <div className="rounded-lg border border-border overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-black">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-white">
-                    Fecha
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-white">
-                    Categoría
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-white">
-                    Descripción
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-white">
-                    Monto
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-white">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredExpenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-black/50">
-                    <td className="px-4 py-3 text-sm text-white">
-                      {new Date(expense.date).toLocaleDateString("es-MX")}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${
-                          categoryColors[expense.category]
-                        }`}
-                      >
-                        {categoryLabels[expense.category]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-white">
-                      {expense.description}
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm font-medium text-white">
-                      ${expense.amount.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          expense.status === "paid"
-                            ? "bg-green-500/20 text-green-500"
-                            : "bg-yellow-500/20 text-yellow-500"
-                        }`}
-                      >
-                        {expense.status === "paid" ? "Pagado" : "Pendiente"}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px]">
+                <thead className="bg-black">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-white">
+                      Fecha
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-white">
+                      Categoría
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-white">
+                      Descripción
+                    </th>
+                    <th className="px-4 py-3 text-right text-sm font-medium text-white">
+                      Monto
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-white">
+                      Estado
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredExpenses.map((expense) => (
+                    <tr key={expense.id} className="hover:bg-black/50">
+                      <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                        {new Date(expense.date).toLocaleDateString("es-MX")}
+                      </td>
+                      <td className="px-4 py-3 text-sm whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${
+                            categoryColors[expense.category]
+                          }`}
+                        >
+                          {categoryLabels[expense.category]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-white">
+                        <div className="max-w-xs truncate" title={expense.description}>
+                          {expense.description}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm font-medium text-white whitespace-nowrap">
+                        ${expense.amount.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            expense.status === "paid"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-yellow-500/20 text-yellow-500"
+                          }`}
+                        >
+                          {expense.status === "paid" ? "Pagado" : "Pendiente"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

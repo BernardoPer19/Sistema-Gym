@@ -145,7 +145,7 @@ export default function MembresiasPage() {
     <div className="flex flex-col">
       <Header title="Membresías" description="Planes y pagos del gimnasio" />
 
-      <div className="flex-1 space-y-6 p-6">
+      <div className="flex-1 space-y-6 p-4 md:p-6">
         {/* Membership Plans */}
         <section>
           <div className="flex items-center justify-between mb-4">

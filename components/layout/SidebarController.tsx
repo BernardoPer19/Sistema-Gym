@@ -1,52 +1,54 @@
 // components/layout/SidebarController.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/utils";
 
 export function SidebarController() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   // Cerrar al cambiar de ruta
   useEffect(() => {
+    setIsOpen(false);
     document.body.dataset.sidebarOpen = "false";
   }, [pathname]);
 
   // Cerrar con ESC
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") document.body.dataset.sidebarOpen = "false";
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        document.body.dataset.sidebarOpen = "false";
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const handleToggle = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+    document.body.dataset.sidebarOpen = String(newState);
+  };
+
   return (
     <>
       {/* Botón hamburguesa (visible en móvil) */}
-      <button
+      <Button
+        variant="outline"
+        size="icon"
         aria-label="Abrir menú"
-        className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
-        onClick={() => (document.body.dataset.sidebarOpen = "true")}
+        className={cn(
+          "fixed top-4 left-4 z-50 md:hidden h-10 w-10 border-neutral-800 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+        )}
+        onClick={handleToggle}
       >
         <Menu className="h-5 w-5" />
-      </button>
-
-      {/* Botón cerrar dentro del drawer (opcional, lo puedes colocar en el header del sidebar si lo hicieras client) */}
-      <button
-        aria-label="Cerrar menú"
-        className="hidden" // placeholder si luego lo mueves al header
-        onClick={() => (document.body.dataset.sidebarOpen = "false")}
-      >
-        <X className="h-5 w-5" />
-      </button>
-
-      {/* Overlay */}
-      <div
-        onClick={() => (document.body.dataset.sidebarOpen = "false")}
-        className="sidebar-overlay fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity md:hidden"
-      />
+      </Button>
     </>
   );
 }

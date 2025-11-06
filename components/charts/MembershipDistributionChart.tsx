@@ -10,6 +10,7 @@ export default function MembershipDistributionChart({ data, colors }: { data: an
         <CardTitle className="text-white">Distribución de Membresías</CardTitle>
         <p className="text-sm text-muted-foreground">Por número de socios</p>
       </CardHeader>
+
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
@@ -17,18 +18,30 @@ export default function MembershipDistributionChart({ data, colors }: { data: an
               data={data}
               cx="50%"
               cy="50%"
+              outerRadius={100}
               labelLine={false}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={100}
               dataKey="value"
             >
               {data.map((_, i) => (
                 <Cell key={i} fill={colors[i % colors.length]} />
               ))}
             </Pie>
+
             <Tooltip
-              contentStyle={{ backgroundColor: "#171717", border: "1px solid #404040" }}
-              labelStyle={{ color: "#ffffff" }}
+              contentStyle={{
+                backgroundColor: "#ffffff", // Fondo claro
+                border: "1px solid #d4d4d4",
+                borderRadius: "6px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+              }}
+              labelStyle={{
+                color: "#111111", // Texto de título
+                fontWeight: 600,
+              }}
+              itemStyle={{
+                color: "#111111", // Texto de items
+              }}
             />
           </PieChart>
         </ResponsiveContainer>

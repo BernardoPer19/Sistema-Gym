@@ -9,9 +9,10 @@ interface RevenueMembersProps {
 }
 
 export function RevenueMembers({ data = [] }: RevenueMembersProps) {
-  const membershipDistribution = data.length > 0
-    ? data.map((item) => ({ name: item.name, value: item.value }))
-    : [];
+  const membershipDistribution =
+    data.length > 0
+      ? data.map((item) => ({ name: item.name, value: item.value }))
+      : [];
 
   const COLORS = ["#ef4444", "#f97316", "#fb923c", "#fdba74"];
 
@@ -34,17 +35,29 @@ export function RevenueMembers({ data = [] }: RevenueMembersProps) {
             cx="50%"
             cy="50%"
             outerRadius={100}
-            fill="#8884d8"
             dataKey="value"
             labelLine={false}
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            label={({ name, percent }) =>
+              `${name} ${(percent * 100).toFixed(0)}%`
+            }
           >
             {membershipDistribution.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
+
+          {/* Tooltip con fondo claro */}
           <Tooltip
-            contentStyle={{ backgroundColor: "#171717", border: "1px solid #404040" }}
+            contentStyle={{
+              backgroundColor: "#ffffff", // Blanco
+              color: "#000000", // Texto negro
+              border: "1px solid #d4d4d4", // Borde gris suave
+              borderRadius: "6px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
           />
         </PieChart>
       </ResponsiveContainer>

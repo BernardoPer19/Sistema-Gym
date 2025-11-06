@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Mail } from "lucide-react";
 import type { Member } from "@/lib/types/types";
-import { getMembershipById } from "@/lib/mock-data";
 
 interface ExpiryAlertsProps {
   expiringMembers: Member[];
@@ -35,8 +34,12 @@ export function ExpiryAlerts({
         {expiringMembers.length > 0 ? (
           <div className="space-y-3">
             {expiringMembers.map((member) => {
-              const membership = getMembershipById(member.membershipId);
-              const daysLeft = getDaysUntilExpiry(member.expiryDate);
+              const membership = (member as any).membership;
+              const daysLeft = getDaysUntilExpiry(
+                member.expiryDate instanceof Date
+                  ? member.expiryDate
+                  : new Date(member.expiryDate)
+              );
 
               return (
                 <div
@@ -46,7 +49,7 @@ export function ExpiryAlerts({
                   <div className="flex-1">
                     <p className="font-medium text-white">{member.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {membership?.name}
+                      {membership?.name || "Sin membresía"}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

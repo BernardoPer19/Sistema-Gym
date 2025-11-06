@@ -5,36 +5,60 @@ import { Header } from "@/components/layout/header";
 import { MembershipCard } from "@/components/membresias/membership-card";
 import { ExpiryAlerts } from "@/components/membresias/expiry-alerts";
 import { PaymentHistory } from "@/components/membresias/payment-history";
-import {
-  members,
-  payments,
-  getExpiringMembers,
-  getMemberById,
-} from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import type { Payment, Membership } from "@/lib/types/types";
+import type { Payment, Membership, Member } from "@/lib/types/types";
 import { CreateMembershipDialog } from "@/components/membresias/CreateMembershipDialog";
-import { deleteMembership, getMemberships } from "@/actions/membership.actions";
+import {
+  deleteMembership,
+  getMemberships,
+  getExpiringMembers,
+  getRecentPayments,
+} from "@/actions/membership.actions";
+import { downloadInvoicePDF } from "@/lib/pdf/invoice-generator";
 
 export default function MembresiasPage() {
   const { toast } = useToast();
 
   const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [expiringMembers, setExpiringMembers] = useState<Member[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const expiringMembers = getExpiringMembers(7);
-
   useEffect(() => {
-    async function fetchMemberships() {
+    async function fetchData() {
       setLoading(true);
       try {
-        const result = await getMemberships();
-        setMemberships(Array.isArray(result) ? result : result?.data ?? []);
+        const [membershipsResult, expiringResult, paymentsResult] =
+          await Promise.all([
+            getMemberships(),
+            getExpiringMembers(7),
+            getRecentPayments(30),
+          ]);
+
+        if (membershipsResult.success) {
+          setMemberships(membershipsResult.data || []);
+        }
+
+        if (expiringResult.success) {
+          setExpiringMembers(expiringResult.data || []);
+        }
+
+        if (paymentsResult.success) {
+          // Convertir fechas de string a Date si es necesario
+          const paymentsWithDates = paymentsResult.data.map((payment: any) => ({
+            ...payment,
+            date:
+              payment.date instanceof Date
+                ? payment.date
+                : new Date(payment.date),
+          }));
+          setPayments(paymentsWithDates);
+        }
       } catch (error) {
         toast({
           title: "Error",
-          description: "No se pudieron cargar las membresías",
+          description: "No se pudieron cargar los datos",
           variant: "destructive",
         });
       } finally {
@@ -42,7 +66,7 @@ export default function MembresiasPage() {
       }
     }
 
-    fetchMemberships();
+    fetchData();
   }, [toast]);
 
   const handleDeleteMembership = async (id: string) => {
@@ -74,7 +98,7 @@ export default function MembresiasPage() {
   };
 
   const handleSendReminder = (memberId: string) => {
-    const member = members.find((m) => m.id === memberId);
+    const member = expiringMembers.find((m) => m.id === memberId);
     if (!member) return;
 
     toast({
@@ -83,21 +107,38 @@ export default function MembresiasPage() {
     });
   };
 
-  const handleDownloadInvoice = (payment: Payment) => {
-    const member = getMemberById(payment.memberId);
-    if (!member) {
+  const handleDownloadInvoice = async (payment: Payment) => {
+    try {
+      const result = await downloadInvoicePDF({
+        invoiceNumber: payment.invoiceNumber,
+        date: payment.date,
+        memberName: payment.memberName,
+        membershipName: payment.membershipName,
+        amount: payment.amount,
+        status: payment.status,
+      });
+
+      if (result.success) {
+        toast({
+          title: "Factura descargada",
+          description: `Factura ${payment.invoiceNumber} descargada correctamente`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "No se pudo generar la factura",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error downloading invoice:", error);
       toast({
         title: "Error",
-        description: "No se pudo encontrar la información del socio",
+        description:
+          "No se pudo generar la factura. Asegúrate de tener jsPDF instalado.",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Recibo descargado",
-      description: `Factura ${payment.invoiceNumber} - ${member.name}`,
-    });
   };
 
   return (
@@ -119,17 +160,13 @@ export default function MembresiasPage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {memberships.map((membership) => {
-                const memberCount = members.filter(
-                  (m) =>
-                    m.membershipId === membership.id && m.status === "active"
-                ).length;
-
+                const memberCount = (membership as any).activeMembersCount || 0;
                 return (
                   <MembershipCard
                     key={membership.id}
                     membership={membership}
                     memberCount={memberCount}
-                    onDelete={handleDeleteMembership} // <-- aquí
+                    onDelete={handleDeleteMembership}
                   />
                 );
               })}

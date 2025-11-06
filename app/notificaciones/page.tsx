@@ -1,45 +1,57 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import { Bell, Plus, Calendar, Users } from "lucide-react"
-import type { Notification } from "@/lib/types"
-import { ProtectedRoute } from "@/components/layout/protected-route"
-import { members } from "@/lib/mock-data"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Bell, Plus, Calendar, Users } from "lucide-react";
+import type { Notification } from "@/lib/types/types";
+import { ProtectedRoute } from "@/components/layout/protected-route";
+import { members } from "@/lib/mock-data";
 
 function NotificationsContent() {
-  const { toast } = useToast()
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const { toast } = useToast();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [newNotification, setNewNotification] = useState({
     type: "system" as Notification["type"],
     title: "",
     message: "",
     userId: "",
-  })
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("gym_notifications")
+    const stored = localStorage.getItem("gym_notifications");
     if (stored) {
-      const parsed = JSON.parse(stored)
+      const parsed = JSON.parse(stored);
       setNotifications(
         parsed.map((n: Notification) => ({
           ...n,
           date: new Date(n.date),
-        })),
-      )
+        }))
+      );
     }
-  }, [])
+  }, []);
 
   const handleCreateNotification = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const notification: Notification = {
       id: `notif-${Date.now()}`,
@@ -49,42 +61,42 @@ function NotificationsContent() {
       date: new Date(),
       read: false,
       userId: newNotification.userId || undefined,
-    }
+    };
 
-    const updated = [notification, ...notifications]
-    setNotifications(updated)
-    localStorage.setItem("gym_notifications", JSON.stringify(updated))
+    const updated = [notification, ...notifications];
+    setNotifications(updated);
+    localStorage.setItem("gym_notifications", JSON.stringify(updated));
 
     toast({
       title: "Notificación creada",
       description: "La notificación ha sido enviada exitosamente.",
-    })
+    });
 
     setNewNotification({
       type: "system",
       title: "",
       message: "",
       userId: "",
-    })
-  }
+    });
+  };
 
   const scheduleExpiryNotifications = () => {
     // Simulate scheduling expiry notifications
-    const count = Math.floor(Math.random() * 5) + 3
+    const count = Math.floor(Math.random() * 5) + 3;
     toast({
       title: "Notificaciones programadas",
       description: `Se programaron ${count} notificaciones de vencimiento.`,
-    })
-  }
+    });
+  };
 
   const schedulePaymentReminders = () => {
     // Simulate scheduling payment reminders
-    const count = Math.floor(Math.random() * 4) + 2
+    const count = Math.floor(Math.random() * 4) + 2;
     toast({
       title: "Recordatorios programados",
       description: `Se programaron ${count} recordatorios de pago.`,
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -95,8 +107,12 @@ function NotificationsContent() {
             <Bell className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">Notificaciones Automáticas</h1>
-            <p className="text-muted-foreground">Gestiona y programa notificaciones para los socios</p>
+            <h1 className="text-3xl font-bold text-white">
+              Notificaciones Automáticas
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona y programa notificaciones para los socios
+            </p>
           </div>
         </div>
 
@@ -108,7 +124,9 @@ function NotificationsContent() {
                 <Plus className="h-5 w-5" />
                 Crear Notificación
               </CardTitle>
-              <CardDescription>Envía una notificación personalizada</CardDescription>
+              <CardDescription>
+                Envía una notificación personalizada
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreateNotification} className="space-y-4">
@@ -119,7 +137,10 @@ function NotificationsContent() {
                   <Select
                     value={newNotification.type}
                     onValueChange={(value) =>
-                      setNewNotification({ ...newNotification, type: value as Notification["type"] })
+                      setNewNotification({
+                        ...newNotification,
+                        type: value as Notification["type"],
+                      })
                     }
                   >
                     <SelectTrigger className="border-neutral-800 bg-neutral-900 text-white">
@@ -140,7 +161,9 @@ function NotificationsContent() {
                   </Label>
                   <Select
                     value={newNotification.userId}
-                    onValueChange={(value) => setNewNotification({ ...newNotification, userId: value })}
+                    onValueChange={(value) =>
+                      setNewNotification({ ...newNotification, userId: value })
+                    }
                   >
                     <SelectTrigger className="border-neutral-800 bg-neutral-900 text-white">
                       <SelectValue placeholder="Todos los usuarios" />
@@ -163,7 +186,12 @@ function NotificationsContent() {
                   <Input
                     id="title"
                     value={newNotification.title}
-                    onChange={(e) => setNewNotification({ ...newNotification, title: e.target.value })}
+                    onChange={(e) =>
+                      setNewNotification({
+                        ...newNotification,
+                        title: e.target.value,
+                      })
+                    }
                     className="border-neutral-800 bg-neutral-900 text-white"
                     placeholder="Título de la notificación"
                     required
@@ -177,7 +205,12 @@ function NotificationsContent() {
                   <Textarea
                     id="message"
                     value={newNotification.message}
-                    onChange={(e) => setNewNotification({ ...newNotification, message: e.target.value })}
+                    onChange={(e) =>
+                      setNewNotification({
+                        ...newNotification,
+                        message: e.target.value,
+                      })
+                    }
                     className="border-neutral-800 bg-neutral-900 text-white"
                     placeholder="Contenido del mensaje"
                     rows={4}
@@ -185,7 +218,10 @@ function NotificationsContent() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Enviar Notificación
                 </Button>
@@ -201,7 +237,9 @@ function NotificationsContent() {
                   <Calendar className="h-5 w-5" />
                   Notificaciones Programadas
                 </CardTitle>
-                <CardDescription>Automatiza recordatorios importantes</CardDescription>
+                <CardDescription>
+                  Automatiza recordatorios importantes
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button
@@ -225,8 +263,12 @@ function NotificationsContent() {
 
             <Card className="border-neutral-800 bg-neutral-950">
               <CardHeader>
-                <CardTitle className="text-white">Integraciones Disponibles</CardTitle>
-                <CardDescription>Conecta con servicios externos</CardDescription>
+                <CardTitle className="text-white">
+                  Integraciones Disponibles
+                </CardTitle>
+                <CardDescription>
+                  Conecta con servicios externos
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-neutral-400">
                 <div className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900 p-3">
@@ -247,7 +289,7 @@ function NotificationsContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function NotificationsPage() {
@@ -255,5 +297,5 @@ export default function NotificationsPage() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <NotificationsContent />
     </ProtectedRoute>
-  )
+  );
 }

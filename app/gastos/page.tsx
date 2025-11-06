@@ -1,15 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { expenses, getTotalExpenses } from "@/lib/mock-data"
-import type { Expense } from "@/lib/types"
-import { Receipt, TrendingUp, DollarSign, Plus, Search } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { expenses, getTotalExpenses } from "@/lib/mock-data";
+import type { Expense } from "@/lib/types/types";
+import { Receipt, TrendingUp, DollarSign, Plus, Search } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const categoryLabels: Record<Expense["category"], string> = {
   limpieza: "Limpieza",
@@ -18,7 +30,7 @@ const categoryLabels: Record<Expense["category"], string> = {
   mantenimiento: "Mantenimiento",
   equipamiento: "Equipamiento",
   otros: "Otros",
-}
+};
 
 const categoryColors: Record<Expense["category"], string> = {
   limpieza: "bg-blue-500",
@@ -27,90 +39,107 @@ const categoryColors: Record<Expense["category"], string> = {
   mantenimiento: "bg-orange-500",
   equipamiento: "bg-green-500",
   otros: "bg-gray-500",
-}
+};
 
 export default function GastosPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [showAddModal, setShowAddModal] = useState(false)
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const { toast } = useToast();
 
-  const now = new Date()
-  const currentMonth = now.getMonth()
-  const currentYear = now.getFullYear()
-  const monthlyTotal = getTotalExpenses(currentMonth, currentYear)
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const monthlyTotal = getTotalExpenses(currentMonth, currentYear);
 
   // Calculate totals by category
-  const categoryTotals = expenses.reduce(
-    (acc, expense) => {
-      const expenseDate = new Date(expense.date)
-      if (expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
-        acc[expense.category] = (acc[expense.category] || 0) + expense.amount
-      }
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+  const categoryTotals = expenses.reduce((acc, expense) => {
+    const expenseDate = new Date(expense.date);
+    if (
+      expenseDate.getMonth() === currentMonth &&
+      expenseDate.getFullYear() === currentYear
+    ) {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
   const filteredExpenses = expenses
     .filter((expense) => {
       const matchesSearch =
         expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        categoryLabels[expense.category].toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = categoryFilter === "all" || expense.category === categoryFilter
-      return matchesSearch && matchesCategory
+        categoryLabels[expense.category]
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        categoryFilter === "all" || expense.category === categoryFilter;
+      return matchesSearch && matchesCategory;
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleAddExpense = () => {
     toast({
       title: "Gasto agregado",
       description: "El gasto ha sido registrado exitosamente",
-    })
-    setShowAddModal(false)
-  }
+    });
+    setShowAddModal(false);
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-white">Gastos</h1>
-        <p className="text-muted-foreground">Gestiona los gastos operativos del gimnasio</p>
+        <p className="text-muted-foreground">
+          Gestiona los gastos operativos del gimnasio
+        </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="bg-secondary border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Total del Mes</CardTitle>
+            <CardTitle className="text-sm font-medium text-white">
+              Total del Mes
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">${monthlyTotal.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">
+              ${monthlyTotal.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">Enero 2025</p>
           </CardContent>
         </Card>
 
         <Card className="bg-secondary border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Categorías Activas</CardTitle>
+            <CardTitle className="text-sm font-medium text-white">
+              Categorías Activas
+            </CardTitle>
             <Receipt className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{Object.keys(categoryTotals).length}</div>
+            <div className="text-2xl font-bold text-white">
+              {Object.keys(categoryTotals).length}
+            </div>
             <p className="text-xs text-muted-foreground">Con gastos este mes</p>
           </CardContent>
         </Card>
 
         <Card className="bg-secondary border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Promedio Diario</CardTitle>
+            <CardTitle className="text-sm font-medium text-white">
+              Promedio Diario
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
               ${Math.round(monthlyTotal / now.getDate()).toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">Basado en días transcurridos</p>
+            <p className="text-xs text-muted-foreground">
+              Basado en días transcurridos
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -119,28 +148,34 @@ export default function GastosPage() {
       <Card className="bg-secondary border-border">
         <CardHeader>
           <CardTitle className="text-white">Gastos por Categoría</CardTitle>
-          <CardDescription>Distribución de gastos del mes actual</CardDescription>
+          <CardDescription>
+            Distribución de gastos del mes actual
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {Object.entries(categoryTotals).map(([category, total]) => {
-              const percentage = (total / monthlyTotal) * 100
+              const percentage = (total / monthlyTotal) * 100;
               return (
                 <div key={category} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white">{categoryLabels[category as Expense["category"]]}</span>
+                    <span className="text-white">
+                      {categoryLabels[category as Expense["category"]]}
+                    </span>
                     <span className="text-muted-foreground">
                       ${total.toLocaleString()} ({percentage.toFixed(1)}%)
                     </span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-black">
                     <div
-                      className={`h-full rounded-full ${categoryColors[category as Expense["category"]]}`}
+                      className={`h-full rounded-full ${
+                        categoryColors[category as Expense["category"]]
+                      }`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </CardContent>
@@ -154,7 +189,10 @@ export default function GastosPage() {
               <CardTitle className="text-white">Historial de Gastos</CardTitle>
               <CardDescription>Todos los gastos registrados</CardDescription>
             </div>
-            <Button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90">
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Agregar Gasto
             </Button>
@@ -190,11 +228,21 @@ export default function GastosPage() {
             <table className="w-full">
               <thead className="bg-black">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-white">Fecha</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-white">Categoría</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-white">Descripción</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-white">Monto</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-white">Estado</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-white">
+                    Fecha
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-white">
+                    Categoría
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-white">
+                    Descripción
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-white">
+                    Monto
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-white">
+                    Estado
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -205,12 +253,16 @@ export default function GastosPage() {
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${categoryColors[expense.category]}`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${
+                          categoryColors[expense.category]
+                        }`}
                       >
                         {categoryLabels[expense.category]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-white">{expense.description}</td>
+                    <td className="px-4 py-3 text-sm text-white">
+                      {expense.description}
+                    </td>
                     <td className="px-4 py-3 text-right text-sm font-medium text-white">
                       ${expense.amount.toLocaleString()}
                     </td>
@@ -239,7 +291,9 @@ export default function GastosPage() {
           <Card className="w-full max-w-md bg-secondary border-border">
             <CardHeader>
               <CardTitle className="text-white">Agregar Nuevo Gasto</CardTitle>
-              <CardDescription>Registra un nuevo gasto operativo</CardDescription>
+              <CardDescription>
+                Registra un nuevo gasto operativo
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -273,19 +327,35 @@ export default function GastosPage() {
                 <Label htmlFor="amount" className="text-white">
                   Monto
                 </Label>
-                <Input id="amount" type="number" placeholder="0.00" className="bg-black border-border text-white" />
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="0.00"
+                  className="bg-black border-border text-white"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date" className="text-white">
                   Fecha
                 </Label>
-                <Input id="date" type="date" className="bg-black border-border text-white" />
+                <Input
+                  id="date"
+                  type="date"
+                  className="bg-black border-border text-white"
+                />
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleAddExpense} className="flex-1 bg-primary hover:bg-primary/90">
+                <Button
+                  onClick={handleAddExpense}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
                   Guardar
                 </Button>
-                <Button onClick={() => setShowAddModal(false)} variant="outline" className="flex-1">
+                <Button
+                  onClick={() => setShowAddModal(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
                   Cancelar
                 </Button>
               </div>
@@ -294,5 +364,5 @@ export default function GastosPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

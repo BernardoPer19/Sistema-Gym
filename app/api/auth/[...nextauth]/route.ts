@@ -4,8 +4,8 @@ import GoogleProvider from "next-auth/providers/google"
 import GithubProvider from "next-auth/providers/github"
 import { prisma } from "@/lib/prisma"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import { signInEmailPassword } from "@/auth/actions/auth-actions"
-import { UserRole } from "@/lib/types"
+import { signInEmailPassword } from "@/actions/auth/auth-actions"
+import { UserRole } from "@/lib/types/types"
 
 // --------------------------------------
 // 🔹 EXTENSIÓN DE TIPOS (NEXT-AUTH)

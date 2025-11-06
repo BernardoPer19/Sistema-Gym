@@ -3,15 +3,27 @@
 import React from "react";
 import { CardContent } from "../ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { members, memberships } from "@/lib/mock-data";
 
-export function RevenueMembers() {
-  const membershipDistribution = memberships.map((m) => ({
-    name: m.name,
-    value: members.filter((mem) => mem.membershipId === m.id).length,
-  }));
+interface RevenueMembersProps {
+  data?: Array<{ name: string; value: number; revenue?: number }>;
+}
+
+export function RevenueMembers({ data = [] }: RevenueMembersProps) {
+  const membershipDistribution = data.length > 0
+    ? data.map((item) => ({ name: item.name, value: item.value }))
+    : [];
 
   const COLORS = ["#ef4444", "#f97316", "#fb923c", "#fdba74"];
+
+  if (membershipDistribution.length === 0) {
+    return (
+      <CardContent>
+        <div className="flex h-[300px] items-center justify-center">
+          <p className="text-muted-foreground">No hay datos disponibles</p>
+        </div>
+      </CardContent>
+    );
+  }
 
   return (
     <CardContent>

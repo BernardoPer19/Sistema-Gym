@@ -1,71 +1,121 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Header } from "@/components/layout/header"
-import { CheckInScanner } from "@/components/asistencias/check-in-scanner"
-import { AttendanceTable } from "@/components/asistencias/attendance-table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { attendances as initialAttendances, getMemberByQRCode } from "@/lib/mock-data"
-import type { Attendance } from "@/lib/types"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { useState, useEffect } from "react";
+import { Header } from "@/components/layout/header";
+import { CheckInScanner } from "@/components/asistencias/check-in-scanner";
+import { AttendanceTable } from "@/components/asistencias/attendance-table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Attendance } from "@/lib/types/types";
+import {
+  markAttendance,
+  getAllAttendances,
+  getAttendanceStats,
+  getWeeklyAttendanceData,
+} from "@/actions/attendance.actions";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function AsistenciasPage() {
-  const [attendances, setAttendances] = useState<Attendance[]>(initialAttendances)
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    today: 0,
+    thisWeek: 0,
+    thisMonth: 0,
+  });
+  const [weeklyData, setWeeklyData] = useState([
+    { day: "Lun", count: 0 },
+    { day: "Mar", count: 0 },
+    { day: "Mié", count: 0 },
+    { day: "Jue", count: 0 },
+    { day: "Vie", count: 0 },
+    { day: "Sáb", count: 0 },
+    { day: "Dom", count: 0 },
+  ]);
 
-  const handleCheckIn = (code: string) => {
-    const member = getMemberByQRCode(code)
+  // Cargar asistencias al montar el componente
+  useEffect(() => {
+    loadAttendances();
+    loadStats();
+    loadWeeklyData();
+  }, []);
 
-    if (!member) {
-      return {
-        success: false,
-        message: "Código no válido. Socio no encontrado.",
+  const loadAttendances = async () => {
+    try {
+      setLoading(true);
+      const result = await getAllAttendances();
+      if (result.success && result.data) {
+        // Convertir fechas de string a Date si es necesario
+        const attendancesWithDates = result.data.map((attendance) => ({
+          ...attendance,
+          date:
+            attendance.date instanceof Date
+              ? attendance.date
+              : new Date(attendance.date),
+        }));
+        setAttendances(attendancesWithDates);
       }
+    } catch (error) {
+      console.error("Error loading attendances:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (member.status !== "active") {
-      return {
-        success: false,
-        member,
-        message:
-          member.status === "expired"
-            ? "Membresía vencida. Por favor renueva tu membresía."
-            : "Membresía inactiva. Contacta a recepción.",
+  const loadStats = async () => {
+    try {
+      const result = await getAttendanceStats();
+      if (result.success && result.data) {
+        setStats(result.data);
       }
+    } catch (error) {
+      console.error("Error loading stats:", error);
     }
+  };
 
-    const now = new Date()
-    const newAttendance: Attendance = {
-      id: `att-${attendances.length + 1}`,
-      memberId: member.id,
-      memberName: member.name,
-      date: now,
-      time: now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }),
-      status: "allowed",
-      attended: true,
+  const loadWeeklyData = async () => {
+    try {
+      const result = await getWeeklyAttendanceData();
+      if (result.success && result.data) {
+        setWeeklyData(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading weekly data:", error);
     }
+  };
 
-    setAttendances([newAttendance, ...attendances])
+  const handleCheckIn = async (code: string) => {
+    const result = await markAttendance(code);
+
+    if (result.success && result.attendance) {
+      // Convertir fecha de string a Date si es necesario
+      const newAttendance = {
+        ...result.attendance,
+        date:
+          result.attendance.date instanceof Date
+            ? result.attendance.date
+            : new Date(result.attendance.date),
+      };
+      // Agregar la nueva asistencia al estado
+      setAttendances((prev) => [newAttendance, ...prev]);
+      // Actualizar estadísticas y datos semanales
+      loadStats();
+      loadWeeklyData();
+    }
 
     return {
-      success: true,
-      member,
-      message: `Bienvenido/a al gimnasio. Disfruta tu entrenamiento.`,
-    }
-  }
-
-  // Weekly attendance chart data
-  const weeklyData = [
-    { day: "Lun", count: 42 },
-    { day: "Mar", count: 38 },
-    { day: "Mié", count: 45 },
-    { day: "Jue", count: 41 },
-    { day: "Vie", count: 48 },
-    { day: "Sáb", count: 35 },
-    { day: "Dom", count: 28 },
-  ]
-
-  // Sort attendances by date (most recent first)
-  const sortedAttendances = [...attendances].sort((a, b) => b.date.getTime() - a.date.getTime())
+      success: result.success,
+      member: result.member,
+      message: result.message,
+    };
+  };
 
   return (
     <div className="flex flex-col">
@@ -74,12 +124,14 @@ export default function AsistenciasPage() {
       <div className="flex-1 space-y-6 p-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Check-in Scanner */}
-          <CheckInScanner onCheckIn={handleCheckIn} />
+          <CheckInScanner onCheckIn={handleCheckIn} stats={stats} />
 
           {/* Weekly Chart */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white">Asistencias Semanales</CardTitle>
+              <CardTitle className="text-white">
+                Asistencias Semanales
+              </CardTitle>
               <p className="text-sm text-muted-foreground">Últimos 7 días</p>
             </CardHeader>
             <CardContent>
@@ -89,7 +141,10 @@ export default function AsistenciasPage() {
                   <XAxis dataKey="day" stroke="#a3a3a3" />
                   <YAxis stroke="#a3a3a3" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#171717", border: "1px solid #404040" }}
+                    contentStyle={{
+                      backgroundColor: "#171717",
+                      border: "1px solid #404040",
+                    }}
                     labelStyle={{ color: "#ffffff" }}
                   />
                   <Bar dataKey="count" fill="#ef4444" radius={[8, 8, 0, 0]} />
@@ -102,14 +157,24 @@ export default function AsistenciasPage() {
         {/* Attendance History */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Historial de Asistencias</CardTitle>
-            <p className="text-sm text-muted-foreground">Registro completo de entradas</p>
+            <CardTitle className="text-white">
+              Historial de Asistencias
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Registro completo de entradas
+            </p>
           </CardHeader>
           <CardContent>
-            <AttendanceTable attendances={sortedAttendances} />
+            {loading ? (
+              <div className="py-12 text-center">
+                <p className="text-muted-foreground">Cargando asistencias...</p>
+              </div>
+            ) : (
+              <AttendanceTable attendances={attendances} />
+            )}
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }

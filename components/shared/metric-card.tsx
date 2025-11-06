@@ -1,19 +1,25 @@
-import { Card, CardContent } from "@/components/ui/card"
-import type { LucideIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card";
+import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils/utils";
 
 interface MetricCardProps {
-  title: string
-  value: string | number
-  icon: LucideIcon
+  title: string;
+  value: string | number;
+  icon: LucideIcon;
   trend?: {
-    value: string
-    positive: boolean
-  }
-  className?: string
+    value: string;
+    positive: boolean;
+  };
+  className?: string;
 }
 
-export function MetricCard({ title, value, icon: Icon, trend, className }: MetricCardProps) {
+export function MetricCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  className,
+}: MetricCardProps) {
   return (
     <Card className={cn("bg-card border-border", className)}>
       <CardContent className="p-6">
@@ -22,7 +28,12 @@ export function MetricCard({ title, value, icon: Icon, trend, className }: Metri
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
             <p className="mt-2 text-3xl font-bold text-white">{value}</p>
             {trend && (
-              <p className={cn("mt-2 text-sm font-medium", trend.positive ? "text-green-500" : "text-red-500")}>
+              <p
+                className={cn(
+                  "mt-2 text-sm font-medium",
+                  trend.positive ? "text-green-500" : "text-red-500"
+                )}
+              >
                 {trend.positive ? "↑" : "↓"} {trend.value}
               </p>
             )}
@@ -33,5 +44,5 @@ export function MetricCard({ title, value, icon: Icon, trend, className }: Metri
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

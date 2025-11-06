@@ -11,19 +11,32 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { getMonthlyRevenue } from "@/lib/mock-data";
 
-export function RevenueChart() {
-  const monthlyRevenue = getMonthlyRevenue();
+interface RevenueChartProps {
+  data?: Array<{ month: string; revenue: number; members?: number }>;
+}
 
-  const revenueData = [
-    { month: "Ene", revenue: 45000 },
-    { month: "Feb", revenue: 52000 },
-    { month: "Mar", revenue: 48000 },
-    { month: "Abr", revenue: 61000 },
-    { month: "May", revenue: 55000 },
-    { month: "Jun", revenue: monthlyRevenue },
-  ];
+export function RevenueChart({ data = [] }: RevenueChartProps) {
+  const revenueData = data.length > 0
+    ? data.map((item) => ({ month: item.month, revenue: item.revenue }))
+    : [
+        { month: "Ene", revenue: 0 },
+        { month: "Feb", revenue: 0 },
+        { month: "Mar", revenue: 0 },
+        { month: "Abr", revenue: 0 },
+        { month: "May", revenue: 0 },
+        { month: "Jun", revenue: 0 },
+      ];
+
+  if (data.length === 0) {
+    return (
+      <CardContent>
+        <div className="flex h-[300px] items-center justify-center">
+          <p className="text-muted-foreground">No hay datos disponibles</p>
+        </div>
+      </CardContent>
+    );
+  }
 
   return (
     <CardContent>

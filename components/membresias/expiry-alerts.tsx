@@ -1,23 +1,26 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { AlertTriangle, Mail } from "lucide-react"
-import type { Member } from "@/lib/types"
-import { getMembershipById } from "@/lib/mock-data"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Mail } from "lucide-react";
+import type { Member } from "@/lib/types/types";
+import { getMembershipById } from "@/lib/mock-data";
 
 interface ExpiryAlertsProps {
-  expiringMembers: Member[]
-  onSendReminder: (memberId: string) => void
+  expiringMembers: Member[];
+  onSendReminder: (memberId: string) => void;
 }
 
-export function ExpiryAlerts({ expiringMembers, onSendReminder }: ExpiryAlertsProps) {
+export function ExpiryAlerts({
+  expiringMembers,
+  onSendReminder,
+}: ExpiryAlertsProps) {
   const getDaysUntilExpiry = (expiryDate: Date) => {
-    const now = new Date()
-    const diff = expiryDate.getTime() - now.getTime()
-    return Math.ceil(diff / (1000 * 60 * 60 * 24))
-  }
+    const now = new Date();
+    const diff = expiryDate.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -32,14 +35,19 @@ export function ExpiryAlerts({ expiringMembers, onSendReminder }: ExpiryAlertsPr
         {expiringMembers.length > 0 ? (
           <div className="space-y-3">
             {expiringMembers.map((member) => {
-              const membership = getMembershipById(member.membershipId)
-              const daysLeft = getDaysUntilExpiry(member.expiryDate)
+              const membership = getMembershipById(member.membershipId);
+              const daysLeft = getDaysUntilExpiry(member.expiryDate);
 
               return (
-                <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary">
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary"
+                >
                   <div className="flex-1">
                     <p className="font-medium text-white">{member.name}</p>
-                    <p className="text-sm text-muted-foreground">{membership?.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {membership?.name}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge
@@ -63,13 +71,15 @@ export function ExpiryAlerts({ expiringMembers, onSendReminder }: ExpiryAlertsPr
                     </Button>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground py-8">No hay membresías próximas a vencer</p>
+          <p className="text-center text-muted-foreground py-8">
+            No hay membresías próximas a vencer
+          </p>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

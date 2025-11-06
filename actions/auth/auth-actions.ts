@@ -1,8 +1,6 @@
 "use server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { registerSchema } from "../auth-validation"
-import { z } from "zod"
 import { User } from '@prisma/client'
 
 export async function registerUser(data: User) {

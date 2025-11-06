@@ -1,26 +1,42 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, Calendar } from "lucide-react"
-import type { Attendance } from "@/lib/types"
+import { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Calendar } from "lucide-react";
+import type { Attendance } from "@/lib/types/types";
 
 interface AttendanceTableProps {
-  attendances: Attendance[]
+  attendances: Attendance[];
 }
 
 export function AttendanceTable({ attendances }: AttendanceTableProps) {
-  const [search, setSearch] = useState("")
-  const [dateFilter, setDateFilter] = useState("")
+  const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   const filteredAttendances = attendances.filter((attendance) => {
-    const matchesSearch = attendance.memberName.toLowerCase().includes(search.toLowerCase())
-    const matchesDate = !dateFilter || attendance.date.toISOString().split("T")[0] === dateFilter
-    return matchesSearch && matchesDate
-  })
+    const matchesSearch = attendance.memberName
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    
+    // Manejar fechas que pueden venir como Date o string
+    const attendanceDate = attendance.date instanceof Date 
+      ? attendance.date 
+      : new Date(attendance.date);
+    
+    const matchesDate =
+      !dateFilter || attendanceDate.toISOString().split("T")[0] === dateFilter;
+    return matchesSearch && matchesDate;
+  });
 
   return (
     <div className="space-y-4">
@@ -50,8 +66,8 @@ export function AttendanceTable({ attendances }: AttendanceTableProps) {
           <Button
             variant="outline"
             onClick={() => {
-              setSearch("")
-              setDateFilter("")
+              setSearch("");
+              setDateFilter("");
             }}
             className="border-border bg-transparent"
           >
@@ -74,9 +90,18 @@ export function AttendanceTable({ attendances }: AttendanceTableProps) {
           <TableBody>
             {filteredAttendances.map((attendance) => (
               <TableRow key={attendance.id} className="border-border">
-                <TableCell className="font-medium text-white">{attendance.memberName}</TableCell>
-                <TableCell className="text-muted-foreground">{attendance.date.toLocaleDateString("es-MX")}</TableCell>
-                <TableCell className="text-muted-foreground">{attendance.time}</TableCell>
+                <TableCell className="font-medium text-white">
+                  {attendance.memberName}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {(attendance.date instanceof Date 
+                    ? attendance.date 
+                    : new Date(attendance.date)
+                  ).toLocaleDateString("es-MX")}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {attendance.time}
+                </TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
@@ -97,9 +122,11 @@ export function AttendanceTable({ attendances }: AttendanceTableProps) {
 
       {filteredAttendances.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-muted-foreground">No se encontraron registros de asistencia</p>
+          <p className="text-muted-foreground">
+            No se encontraron registros de asistencia
+          </p>
         </div>
       )}
     </div>
-  )
+  );
 }

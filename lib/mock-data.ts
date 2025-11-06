@@ -9,7 +9,7 @@ import type {
   User,
   GymConfig,
   Notification,
-} from "./types"
+} from "./types/types"
 
 // Memberships
 export const memberships: Membership[] = [

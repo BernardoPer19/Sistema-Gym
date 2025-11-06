@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { LayoutContent } from "@/components/layout/layout-content";
 import SessionLayout from "@/components/layout/session-layout";
+import { ConfigProviderClient } from "@/components/layout/ConfingLayout";
 
 export const metadata: Metadata = {
   title: "GYM PRO - Sistema de Gestión",
@@ -23,11 +24,13 @@ export default function RootLayout({
       <body
         className={`font-sans ${GeistSans.variable} ${GeistMono.variable} h-screen overflow-hidden`}
       >
-        <SessionLayout>
-          <Suspense fallback={<div>Loading...</div>}>
-            <LayoutContent>{children}</LayoutContent>
-          </Suspense>
-        </SessionLayout>
+        <ConfigProviderClient>
+          <SessionLayout>
+            <Suspense fallback={<div>Loading...</div>}>
+              <LayoutContent>{children}</LayoutContent>
+            </Suspense>
+          </SessionLayout>
+        </ConfigProviderClient>
 
         <Analytics />
       </body>

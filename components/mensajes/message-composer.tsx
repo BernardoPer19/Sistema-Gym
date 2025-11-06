@@ -1,49 +1,61 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MessageSquare, Send } from "lucide-react"
-import type { Member, MessageType } from "@/lib/types"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MessageSquare, Send } from "lucide-react";
+import type { Member, MessageType } from "@/lib/types/types";
 
 interface MessageComposerProps {
-  members: Member[]
-  onSend: (data: { type: MessageType; recipient: string; content: string }) => void
+  members: Member[];
+  onSend: (data: {
+    type: MessageType;
+    recipient: string;
+    content: string;
+  }) => void;
 }
 
 const messageTemplates = {
-  renewal: "¡Hola! Tu membresía ha sido renovada exitosamente. ¡Gracias por seguir con nosotros! 💪",
-  birthday: "¡Feliz cumpleaños! 🎉 Disfruta de un día de entrenamiento gratis como regalo.",
+  renewal:
+    "¡Hola! Tu membresía ha sido renovada exitosamente. ¡Gracias por seguir con nosotros! 💪",
+  birthday:
+    "¡Feliz cumpleaños! 🎉 Disfruta de un día de entrenamiento gratis como regalo.",
   payment_reminder:
     "Recordatorio: Tu pago vence en 3 días. Por favor realiza tu pago para evitar interrupciones en tu membresía.",
   custom: "",
-}
+};
 
 export function MessageComposer({ members, onSend }: MessageComposerProps) {
-  const [messageType, setMessageType] = useState<MessageType>("renewal")
-  const [recipient, setRecipient] = useState<string>("")
-  const [content, setContent] = useState(messageTemplates.renewal)
+  const [messageType, setMessageType] = useState<MessageType>("renewal");
+  const [recipient, setRecipient] = useState<string>("");
+  const [content, setContent] = useState(messageTemplates.renewal);
 
   const handleTypeChange = (type: MessageType) => {
-    setMessageType(type)
-    setContent(messageTemplates[type])
-  }
+    setMessageType(type);
+    setContent(messageTemplates[type]);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!recipient || !content.trim()) return
+    e.preventDefault();
+    if (!recipient || !content.trim()) return;
 
-    onSend({ type: messageType, recipient, content })
+    onSend({ type: messageType, recipient, content });
 
     // Reset form
-    setRecipient("")
-    setContent(messageTemplates[messageType])
-  }
+    setRecipient("");
+    setContent(messageTemplates[messageType]);
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -52,13 +64,18 @@ export function MessageComposer({ members, onSend }: MessageComposerProps) {
           <MessageSquare className="h-5 w-5 text-primary" />
           <CardTitle className="text-white">Enviar Mensaje</CardTitle>
         </div>
-        <p className="text-sm text-muted-foreground">Selecciona una plantilla o escribe un mensaje personalizado</p>
+        <p className="text-sm text-muted-foreground">
+          Selecciona una plantilla o escribe un mensaje personalizado
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="type">Tipo de Mensaje</Label>
-            <Select value={messageType} onValueChange={(value: MessageType) => handleTypeChange(value)}>
+            <Select
+              value={messageType}
+              onValueChange={(value: MessageType) => handleTypeChange(value)}
+            >
               <SelectTrigger className="bg-secondary border-border text-white">
                 <SelectValue />
               </SelectTrigger>
@@ -87,7 +104,11 @@ export function MessageComposer({ members, onSend }: MessageComposerProps) {
               </SelectTrigger>
               <SelectContent className="bg-card border-border max-h-[200px]">
                 {members.map((member) => (
-                  <SelectItem key={member.id} value={member.name} className="text-white">
+                  <SelectItem
+                    key={member.id}
+                    value={member.name}
+                    className="text-white"
+                  >
                     {member.name} - {member.email}
                   </SelectItem>
                 ))}
@@ -106,12 +127,16 @@ export function MessageComposer({ members, onSend }: MessageComposerProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full gap-2" disabled={!recipient || !content.trim()}>
+          <Button
+            type="submit"
+            className="w-full gap-2"
+            disabled={!recipient || !content.trim()}
+          >
             <Send className="h-4 w-4" />
             Enviar Mensaje
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

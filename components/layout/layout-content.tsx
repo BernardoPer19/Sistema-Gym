@@ -2,8 +2,8 @@
 
 import React, { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { Sidebar } from "./sidebar"
 import { useSession } from "next-auth/react"
+import { Sidebar } from "./sidebar"
 
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

@@ -9,11 +9,38 @@ import "./globals.css";
 import { LayoutContent } from "@/components/layout/layout-content";
 import SessionLayout from "@/components/layout/session-layout";
 import { ConfigProviderClient } from "@/components/layout/ConfingLayout";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 
 export const metadata: Metadata = {
   title: "GYM PRO - Sistema de Gestión",
   description: "Sistema completo de gestión para gimnasios",
   generator: "v0.app",
+  manifest: "/manifest.json",
+  themeColor: "#ef4444",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "GYM PRO",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
+  },
 };
 
 export default function RootLayout({
@@ -32,6 +59,7 @@ export default function RootLayout({
           </SessionLayout>
         </ConfigProviderClient>
 
+        <InstallPrompt />
         <Analytics />
       </body>
     </html>

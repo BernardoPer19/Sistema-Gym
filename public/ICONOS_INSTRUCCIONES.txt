@@ -1,0 +1,31 @@
+
+INSTRUCCIONES PARA ICONOS PWA:
+
+1. Crea iconos en los siguientes tamaños:
+   - 72x72px
+   - 96x96px
+   - 128x128px
+   - 144x144px
+   - 152x152px
+   - 192x192px
+   - 384x384px
+   - 512x512px
+
+2. Los iconos deben ser PNG con fondo transparente o del color del tema (#ef4444)
+
+3. Coloca los iconos en la carpeta /public con los nombres:
+   - icon-72x72.png
+   - icon-96x96.png
+   - icon-128x128.png
+   - icon-144x144.png
+   - icon-152x152.png
+   - icon-192x192.png
+   - icon-384x384.png
+   - icon-512x512.png
+
+4. Puedes usar herramientas como:
+   - https://realfavicongenerator.net/
+   - https://www.pwabuilder.com/imageGenerator
+   - Figma, Photoshop, etc.
+
+5. El icono debe representar tu marca/app (GYM PRO)

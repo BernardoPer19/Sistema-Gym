@@ -132,7 +132,7 @@ export function Sidebar() {
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
             <span className="text-sm font-semibold text-white">
-              {user.name
+              {user?.name
                 .split(" ")
                 .map((n) => n[0])
                 .join("")

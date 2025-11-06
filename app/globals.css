@@ -165,3 +165,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Cuando body[data-sidebar-open=true], mostramos overlay y traemos el sidebar */
+body[data-sidebar-open="true"] .sidebar-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+body[data-sidebar-open="true"] .mobile-sidebar {
+  transform: translateX(0); /* por defecto está en -translate-x-full */
+}

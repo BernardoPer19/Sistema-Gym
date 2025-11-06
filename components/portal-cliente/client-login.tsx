@@ -11,10 +11,11 @@ import { UserCircle, LogIn, QrCode, Scan } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface ClientLoginProps {
-  onLogin: (code: string) => void
+  onLogin: (code: string) => void;
+  loading?: boolean;
 }
 
-export function ClientLogin({ onLogin }: ClientLoginProps) {
+export function ClientLogin({ onLogin, loading = false }: ClientLoginProps) {
   const [code, setCode] = useState("")
   const [qrCode, setQrCode] = useState("")
 
@@ -72,9 +73,9 @@ export function ClientLogin({ onLogin }: ClientLoginProps) {
                   </p>
                 </div>
 
-                <Button type="submit" className="w-full gap-2">
+                <Button type="submit" className="w-full gap-2" disabled={loading}>
                   <LogIn className="h-4 w-4" />
-                  Acceder con QR
+                  {loading ? "Verificando..." : "Acceder con QR"}
                 </Button>
               </form>
             </TabsContent>
@@ -91,12 +92,12 @@ export function ClientLogin({ onLogin }: ClientLoginProps) {
                     className="bg-secondary border-border text-white"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">Usa tu ID de socio como: member-1, member-2, etc.</p>
+                  <p className="text-xs text-muted-foreground">Ingresa tu ID de socio o código QR completo</p>
                 </div>
 
-                <Button type="submit" className="w-full gap-2">
+                <Button type="submit" className="w-full gap-2" disabled={loading}>
                   <LogIn className="h-4 w-4" />
-                  Acceder con Código
+                  {loading ? "Verificando..." : "Acceder con Código"}
                 </Button>
               </form>
             </TabsContent>

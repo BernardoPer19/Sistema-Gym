@@ -20,11 +20,10 @@ import {
   Download,
   QrCode,
 } from "lucide-react";
-import type { Member, Payment, Attendance } from "@/lib/types/types";
-import { getMembershipById } from "@/lib/mock-data";
+import type { Member, Payment, Attendance, Membership } from "@/lib/types/types";
 
 interface ClientDashboardProps {
-  member: Member;
+  member: Member & { membership?: Membership };
   payments: Payment[];
   attendances: Attendance[];
   onLogout: () => void;
@@ -36,7 +35,7 @@ export function ClientDashboard({
   attendances,
   onLogout,
 }: ClientDashboardProps) {
-  const membership = getMembershipById(member.membershipId);
+  const membership = (member as any).membership;
 
   const getStatusColor = (status: Member["status"]) => {
     switch (status) {
@@ -51,7 +50,11 @@ export function ClientDashboard({
 
   const getDaysUntilExpiry = () => {
     const now = new Date();
-    const diff = member.expiryDate.getTime() - now.getTime();
+    const expiryDate =
+      member.expiryDate instanceof Date
+        ? member.expiryDate
+        : new Date(member.expiryDate);
+    const diff = expiryDate.getTime() - now.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
@@ -163,8 +166,8 @@ export function ClientDashboard({
                 <p className="text-sm font-medium text-gray-900">
                   Código de Acceso
                 </p>
-                <p className="text-xs text-gray-600 mt-1 font-mono">
-                  {member.qrCode}
+                <p className="text-xs text-gray-600 mt-1 font-mono break-all">
+                  {member.qrCode || "Sin código QR"}
                 </p>
               </div>
               <p className="text-xs text-gray-500 text-center max-w-sm">
@@ -220,7 +223,9 @@ export function ClientDashboard({
                   Fecha de Registro
                 </p>
                 <p className="text-sm font-medium text-white">
-                  {member.joinDate.toLocaleDateString("es-MX")}
+                  {member.joinDate instanceof Date
+                    ? member.joinDate.toLocaleDateString("es-MX")
+                    : new Date(member.joinDate).toLocaleDateString("es-MX")}
                 </p>
               </div>
               <div className="flex-1">
@@ -228,7 +233,9 @@ export function ClientDashboard({
                   Fecha de Vencimiento
                 </p>
                 <p className="text-sm font-medium text-white">
-                  {member.expiryDate.toLocaleDateString("es-MX")}
+                  {member.expiryDate instanceof Date
+                    ? member.expiryDate.toLocaleDateString("es-MX")
+                    : new Date(member.expiryDate).toLocaleDateString("es-MX")}
                 </p>
               </div>
               <div className="flex-1">
@@ -236,7 +243,9 @@ export function ClientDashboard({
                   Fecha de Nacimiento
                 </p>
                 <p className="text-sm font-medium text-white">
-                  {member.birthDate.toLocaleDateString("es-MX")}
+                  {member.birthDate instanceof Date
+                    ? member.birthDate.toLocaleDateString("es-MX")
+                    : new Date(member.birthDate).toLocaleDateString("es-MX")}
                 </p>
               </div>
             </div>
@@ -277,7 +286,9 @@ export function ClientDashboard({
                         {payment.invoiceNumber}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {payment.date.toLocaleDateString("es-MX")}
+                        {payment.date instanceof Date
+                          ? payment.date.toLocaleDateString("es-MX")
+                          : new Date(payment.date).toLocaleDateString("es-MX")}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         ${payment.amount}
@@ -343,7 +354,9 @@ export function ClientDashboard({
                   {attendances.slice(0, 10).map((attendance) => (
                     <TableRow key={attendance.id} className="border-border">
                       <TableCell className="text-white">
-                        {attendance.date.toLocaleDateString("es-MX")}
+                        {attendance.date instanceof Date
+                          ? attendance.date.toLocaleDateString("es-MX")
+                          : new Date(attendance.date).toLocaleDateString("es-MX")}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {attendance.time}

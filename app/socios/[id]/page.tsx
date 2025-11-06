@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,8 +45,9 @@ interface MemberDetailData extends Member {
 export default function MemberDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const resolvedParams = use(params);
   const [member, setMember] = useState<MemberDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [memberships, setMemberships] = useState<Membership[]>([]);
@@ -55,13 +56,13 @@ export default function MemberDetailPage({
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   const loadData = async () => {
     setLoading(true);
 
     // Cargar miembro
-    const memberResult = await getMemberById(params.id);
+    const memberResult = await getMemberById(resolvedParams.id);
     if (memberResult.success) {
       setMember(memberResult.data);
     } else {

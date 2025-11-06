@@ -22,6 +22,7 @@ export async function markAttendance(qrCode: string) {
         });
 
         if (!member) {
+            // No guardamos asistencia si el miembro no existe
             return {
                 success: false,
                 message: "Código no válido. Socio no encontrado.",
@@ -41,6 +42,22 @@ export async function markAttendance(qrCode: string) {
                 });
             }
 
+            // Guardar asistencia denegada
+            const deniedAttendance = await prisma.attendance.create({
+                data: {
+                    memberId: member.id,
+                    date: now,
+                    time: now.toLocaleTimeString("es-MX", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
+                    status: "denied",
+                    attended: false,
+                },
+            });
+
+            revalidatePath("/asistencias");
+
             return {
                 success: false,
                 member: {
@@ -56,11 +73,36 @@ export async function markAttendance(qrCode: string) {
                     qrCode: member.qrCode,
                     photo: member.photo || undefined,
                 },
+                attendance: {
+                    id: deniedAttendance.id,
+                    memberId: deniedAttendance.memberId,
+                    memberName: member.name,
+                    date: deniedAttendance.date,
+                    time: deniedAttendance.time,
+                    status: deniedAttendance.status,
+                    attended: deniedAttendance.attended,
+                },
                 message: "Membresía vencida. Por favor renueva tu membresía.",
             };
         }
 
         if (member.status === "inactive") {
+            // Guardar asistencia denegada
+            const deniedAttendance = await prisma.attendance.create({
+                data: {
+                    memberId: member.id,
+                    date: now,
+                    time: now.toLocaleTimeString("es-MX", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
+                    status: "denied",
+                    attended: false,
+                },
+            });
+
+            revalidatePath("/asistencias");
+
             return {
                 success: false,
                 member: {
@@ -75,6 +117,15 @@ export async function markAttendance(qrCode: string) {
                     birthDate: member.birthDate,
                     qrCode: member.qrCode,
                     photo: member.photo || undefined,
+                },
+                attendance: {
+                    id: deniedAttendance.id,
+                    memberId: deniedAttendance.memberId,
+                    memberName: member.name,
+                    date: deniedAttendance.date,
+                    time: deniedAttendance.time,
+                    status: deniedAttendance.status,
+                    attended: deniedAttendance.attended,
                 },
                 message: "Membresía inactiva. Contacta a recepción.",
             };
@@ -148,6 +199,7 @@ export async function markAttendance(qrCode: string) {
 
 /**
  * Obtener todas las asistencias con información del miembro
+ * Incluye tanto asistencias permitidas como denegadas
  */
 export async function getAllAttendances() {
     try {

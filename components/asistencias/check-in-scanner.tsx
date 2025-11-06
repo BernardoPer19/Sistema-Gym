@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QrCode, CheckCircle, XCircle, User, Scan, Camera } from "lucide-react";
 import type { Member } from "@/lib/types/types";
+import { playSuccessSound, playErrorSound } from "@/lib/audio/sounds";
 
 interface CheckInScannerProps {
   onCheckIn: (code: string) => Promise<{
@@ -44,10 +45,18 @@ export function CheckInScanner({ onCheckIn, stats }: CheckInScannerProps) {
       setResult(checkInResult);
       setCode("");
 
+      // Reproducir sonido según el resultado
+      if (checkInResult.success) {
+        playSuccessSound();
+      } else {
+        playErrorSound();
+      }
+
       // Clear result after 5 seconds
       setTimeout(() => setResult(null), 5000);
     } catch (error) {
       console.error("Error checking in:", error);
+      playErrorSound();
       setResult({
         success: false,
         message: "Error al procesar la asistencia. Intenta nuevamente.",
@@ -192,9 +201,7 @@ export function CheckInScanner({ onCheckIn, stats }: CheckInScannerProps) {
 
         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">
-              {stats?.today ?? 0}
-            </p>
+            <p className="text-2xl font-bold text-white">{stats?.today ?? 0}</p>
             <p className="text-xs text-muted-foreground">Hoy</p>
           </div>
           <div className="text-center">

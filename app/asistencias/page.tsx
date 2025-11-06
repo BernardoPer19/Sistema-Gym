@@ -94,7 +94,8 @@ export default function AsistenciasPage() {
   const handleCheckIn = async (code: string) => {
     const result = await markAttendance(code);
 
-    if (result.success && result.attendance) {
+    // Si hay una asistencia (aceptada o denegada), agregarla al historial
+    if (result.attendance) {
       // Convertir fecha de string a Date si es necesario
       const newAttendance = {
         ...result.attendance,
@@ -103,7 +104,7 @@ export default function AsistenciasPage() {
             ? result.attendance.date
             : new Date(result.attendance.date),
       };
-      // Agregar la nueva asistencia al estado
+      // Agregar la nueva asistencia al estado (tanto permitidas como denegadas)
       setAttendances((prev) => [newAttendance, ...prev]);
       // Actualizar estadísticas y datos semanales
       loadStats();
